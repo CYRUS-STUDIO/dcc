@@ -77,10 +77,28 @@ class ApkTool(object):
 
 
 def sign(unsigned_apk, signed_apk):
-    pem = os.path.join('tests/testkey/testkey.x509.pem')
-    pk8 = os.path.join('tests/testkey/testkey.pk8')
+    keystore = 'cyrus.jks'
+    alias = 'cyrus_studio'
+    storepass = 'cyrus_studio'
+    keypass = 'cyrus_studio'
+
     logger.info("signing %s -> %s" % (unsigned_apk, signed_apk))
-    subprocess.check_call(['java', '-jar', SIGNJAR, pem, pk8, unsigned_apk, signed_apk])
+
+    # apksigner 的 sign 命令是要直接操作输出文件（--out），所以我先 shutil.copy() 复制一份 unsigned 到 signed
+    import shutil
+    shutil.copy(unsigned_apk, signed_apk)
+
+    # 调用 apksigner 签名
+    subprocess.check_call([
+        apksigner, 'sign',
+        '--ks', keystore,
+        '--ks-key-alias', alias,
+        '--ks-pass', f'pass:{storepass}',
+        '--key-pass', f'pass:{keypass}',
+        '--out', signed_apk,
+        signed_apk
+    ])
+
 
 
 def build_project(project_dir, num_processes=0):
@@ -117,7 +135,7 @@ class MethodFilter(object):
         if not os.path.exists(configure):
             return
 
-        with open(configure) as fp:
+        with open(configure, encoding="utf-8") as fp:
             for line in fp:
                 line = line.strip()
                 if not line or line[0] == '#':
@@ -536,6 +554,9 @@ if __name__ == '__main__':
 
     if 'apktool' in dcc_cfg and os.path.exists(dcc_cfg['apktool']):
         APKTOOL = dcc_cfg['apktool']
+
+    if 'apksigner' in dcc_cfg and os.path.exists(dcc_cfg['apksigner']):
+        apksigner = dcc_cfg['apksigner']
 
     try:
         dcc_main(infile, filtercfg, outapk, do_compile, project_dir, source_archive, dynamic_register)

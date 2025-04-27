@@ -6,3 +6,7 @@ data
 
 # Cache
 __pycache__
+
+.idea
+out.apk
+project-source.zip

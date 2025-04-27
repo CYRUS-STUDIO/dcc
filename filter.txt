@@ -1,12 +1,14 @@
-# do not compile constructor
+# 不编译构造函数（<init>）和类初始化块（<clinit>）。（! 表示排除）
 !<clinit|init>
 
-# test demo
+# 不编译名字叫 bigGoto 的方法
 !bigGoto
+
+# 编译类名包含 TestCompiler 的类/方法
 .*TestCompiler.*
 
-# compile method named onCreate, mostly activity's onCreate
+# 编译任意类（.*;）中方法签名包含 onCreate\(Landroid/os/Bundle; 的方法
 .*;onCreate\(Landroid/os/Bundle;.*
 
-# compile all method, use to test compiler
+# 编译所有方法
 #.*
